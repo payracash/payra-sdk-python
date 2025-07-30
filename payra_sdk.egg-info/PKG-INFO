@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: payra_sdk
-Version: 0.1.0
+Version: 0.1.1
 Summary: Python SDK for Payra payment signature generation (backend)
 Author: Your Name
 Author-email: Wraith <wraith@payra.cash>
@@ -10,8 +10,9 @@ License: MIT License
         
         Permission is hereby granted, free of charge, to any person obtaining a copy...
         
-Project-URL: Homepage, https://github.com/your-username/payra-sdk-python
-Project-URL: Bug Tracker, https://github.com/your-username/payra-sdk-python/issues
+Project-URL: Homepage, https://github.com/payracash
+Project-URL: Source, https://github.com/payracash/payra-sdk-python
+Project-URL: Issues, https://github.com/payracash/payra-sdk-python/issues
 Requires-Python: >=3.8
 Description-Content-Type: text/markdown
 License-File: LICENSE
@@ -19,6 +20,7 @@ Requires-Dist: eth-abi>=4.0.0
 Requires-Dist: eth-account>=0.10.0
 Requires-Dist: python-dotenv>=1.0.0
 Dynamic: license-file
+
 
 # Payra Python SDK (Backend Signature Generation)
 
@@ -150,12 +152,20 @@ MIT License – see [LICENSE](https://en.wikipedia.org/wiki/MIT_License)
 
 ---
 
+## 📦 Projects
+
+-   [GitHub / Home](https://github.com/payracash)
+-   [GitHub / Source](https://github.com/payracash/payra-sdk-python)
+-   [GitHub / Issues](https://github.com/payracash/payra-sdk-python/issues)
+
+---
+
 ## 🔗 Links
 
--   [https://payra.cash](https://payra.cash/)
--   [https://payra.tech](https://payra.tech/)
--   [https://payra.xyz](https://payra.xyz/)
--   [https://payra.eth](https://payra.eth/)
+-   [https://payra.cash](https://payra.cash)
+-   [https://payra.tech](https://payra.tech)
+-   [https://payra.xyz](https://payra.xyz)
+-   [https://payra.eth](https://payra.eth)
 
 ---
 

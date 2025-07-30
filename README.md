@@ -1,3 +1,4 @@
+
 # Payra Python SDK (Backend Signature Generation)
 
 This Python SDK provides backend functionality to **generate and verify payment signatures** for the [Payra](https://payra.cash) on-chain payment system.  
@@ -128,12 +129,20 @@ MIT License – see [LICENSE](https://en.wikipedia.org/wiki/MIT_License)
 
 ---
 
+## 📦 Projects
+
+-   [GitHub / Home](https://github.com/payracash)
+-   [GitHub / Source](https://github.com/payracash/payra-sdk-python)
+-   [GitHub / Issues](https://github.com/payracash/payra-sdk-python/issues)
+
+---
+
 ## 🔗 Links
 
--   [https://payra.cash](https://payra.cash/)
--   [https://payra.tech](https://payra.tech/)
--   [https://payra.xyz](https://payra.xyz/)
--   [https://payra.eth](https://payra.eth/)
+-   [https://payra.cash](https://payra.cash)
+-   [https://payra.tech](https://payra.tech)
+-   [https://payra.xyz](https://payra.xyz)
+-   [https://payra.eth](https://payra.eth)
 
 ---
 
