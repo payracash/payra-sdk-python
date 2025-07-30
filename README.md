@@ -4,7 +4,7 @@
 This Python SDK provides backend functionality to **generate and verify payment signatures** for the [Payra](https://payra.cash) on-chain payment system.  
 It allows your server to securely sign payment requests using an Ethereum private key, without any connection to the blockchain.
 
-## ⚙️ How It Works
+## How It Works
 
 Typical flow:
 
@@ -24,7 +24,7 @@ This ensures full compatibility between your backend and Payra’s on-chain logi
 
 ---
 
-## ✨ Features
+## Features
 
 - ABI encoding of parameters (token, merchantId, orderId, amount, timestamp, payer)
 - Keccak256 hashing (same as `ethers.utils.keccak256`)
@@ -34,7 +34,17 @@ This ensures full compatibility between your backend and Payra’s on-chain logi
 
 ---
 
-## 📦 Installation
+## SETUP
+
+Before installing this package, make sure you have an active Payra account:
+
+- [https://payra.cash](https://payra.cash)
+
+You will need your merchantID and a dedicated account (private key) to generate valid payment signatures.
+
+---
+
+## Installation
 
 Clone and install locally (editable mode for development):
 
@@ -48,7 +58,7 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -e .
 ```
 
-## 🔐 Environment Configuration
+## Environment Configuration
 
 Create a `.env` file in your project root:
 
@@ -74,7 +84,7 @@ PAYRA_LINEA_MERCHANT_ID=999
 
 ---
 
-## 🚀 Usage Example
+## Usage Example
 
 Here’s how to generate and verify a Payra signature in your backend:
 
@@ -112,7 +122,7 @@ except Exception as e:
     print(f"Unexpected error: {e}")
 ```
 
-## 🧪 Testing
+## Testing
 You can run the included `example.py` to test signing and verification:
 
 ```python
@@ -123,13 +133,7 @@ Make sure your `.env` file contains correct values for the `network` being used.
 
 ---
 
-## 📄 License
-
-MIT License – see [LICENSE](https://en.wikipedia.org/wiki/MIT_License)
-
----
-
-## 📦 Projects
+## Projects
 
 -   [GitHub / Home](https://github.com/payracash)
 -   [GitHub / Source](https://github.com/payracash/payra-sdk-python)
@@ -137,7 +141,7 @@ MIT License – see [LICENSE](https://en.wikipedia.org/wiki/MIT_License)
 
 ---
 
-## 🔗 Links
+## Project
 
 -   [https://payra.cash](https://payra.cash)
 -   [https://payra.tech](https://payra.tech)
@@ -146,8 +150,15 @@ MIT License – see [LICENSE](https://en.wikipedia.org/wiki/MIT_License)
 
 ---
 
-## 🌐 Social Media
+## Social Media
 
 - [Telegram Payra Group](https://t.me/+GhTyJJrd4SMyMDA0)
 - [Telegram Announcements](https://t.me/payracash)
 - [Twix (X)](https://x.com/PayraCash)
+
+---
+
+
+##  License
+
+MIT © [Payra](https://github.com/payracash)
