@@ -49,7 +49,7 @@ You will need your merchantID and a dedicated account (private key) to generate 
 Clone and install locally (editable mode for development):
 
 ```bash
-git clone https://github.com/your-username/payra-sdk-python.git
+git clone https://github.com/payracash/payra-sdk-python.git
 cd payra-sdk-python
 
 python -m venv venv
