@@ -46,6 +46,12 @@ You will need your merchantID and a dedicated account (private key) to generate 
 
 ## Installation
 
+Installing via PyPI (Python Package Index)
+
+```bash
+pip install payra-sdk
+```
+
 Clone and install locally (editable mode for development):
 
 ```bash
