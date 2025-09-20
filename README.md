@@ -1,12 +1,17 @@
 
-# Payra Python SDK (Backend Signature Generation)
 
-This Python SDK provides backend functionality to **generate and verify payment signatures** for the [Payra](https://payra.cash) on-chain payment system.  
-It allows your server to securely sign payment requests using an Ethereum private key, without any connection to the blockchain.
+# Payra Python SDK (Backend Signature and Check Order Status)
+
+This Python SDK provides backend functionality to **generate and verify payment signatures** and **checking the on-chain status of orders** for the [Payra](https://payra.cash) on-chain payment system.  
+
+This SDK provides:  
+- Secure generation of **ECDSA signatures** compatible with the Payra smart contract (used for payment verification).  
+- Easy integration for **checking the on-chain status of orders** to confirm whether payments have been completed.  
+-
 
 ## How It Works
 
-Typical flow:
+Typical flow for sign transaction:
 
 1. The **frontend** prepares all required payment parameters:
    - Network (name: e.g. Polygon, Linea, etc.)
@@ -31,6 +36,8 @@ This ensures full compatibility between your backend and Payra’s on-chain logi
 - Ethereum ECDSA signing of raw hashes (no prefixing)
 - Offline signature verification (recover signer address)
 - Supports **multiple networks** via dynamic `.env` configuration
+- Order status verification directly against the blockchain  
+- Secure backend integration with merchant private keys
 
 ---
 
@@ -72,6 +79,12 @@ Create a `.env` file in your project root:
 cp .env.example .env
 ```
 
+Additionally, you must create a free account at [QuickNode](https://www.quicknode.com/) to obtain an API key.  This key is required for sending RPC requests to the blockchain in order to verify the on-chain status of orders.
+
+```bash
+QUICK_NODE_RPC_API_KEY= your api key
+```
+
 Edit the `.env` file and add credentials for each supported network. Example for Polygon:
 
 ```bash
@@ -92,7 +105,7 @@ PAYRA_LINEA_MERCHANT_ID=999
 
 ## Usage Example
 
-Here’s how to generate and verify a Payra signature in your backend:
+#### Here’s how to generate and verify a Payra signature in your backend:
 
 ```python
 from payra_sdk import PayraSignatureGenerator, PayraSDKException
@@ -128,11 +141,45 @@ except Exception as e:
     print(f"Unexpected error: {e}")
 ```
 
-## Testing
-You can run the included `example.py` to test signing and verification:
+#### Here’s how to check order status:
 
 ```python
-python3 example.py
+from payra_sdk import PayraOrderVerification, PayraSDKException
+
+ORDER_ID = "your-real-order-id"
+
+def run_example():
+    try:
+        verifier = PayraOrderVerification("polygon") #select network
+        result = verifier.is_order_paid(ORDER_ID)
+
+        print("\nChecking order status...")
+        print("Order ID:", ORDER_ID)
+        print("Result:", result)
+
+        if result["success"] and result["paid"]:
+            print("Order is PAID")
+        elif result["success"]:
+            print("Order is NOT paid yet")
+        else:
+            print("Error:", result["error"])
+
+    except PayraSDKException as e:
+        print(f"SDK error: {e}")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+
+if __name__ == "__main__":
+    run_example()
+```
+
+
+## Testing
+You can run the included `examples` to test signing and verification:
+
+```python
+python3 example_signature.py
+python3 example_order_verification.py
 ```
 
 Make sure your `.env` file contains correct values for the `network` being used.
@@ -161,6 +208,7 @@ Make sure your `.env` file contains correct values for the `network` being used.
 - [Telegram Payra Group](https://t.me/+GhTyJJrd4SMyMDA0)
 - [Telegram Announcements](https://t.me/payracash)
 - [Twix (X)](https://x.com/PayraCash)
+- [Hashnode](https://payra.hashnode.dev)
 
 ---
 
