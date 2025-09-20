@@ -5,10 +5,11 @@ name = "payra_sdk"
 version = "1.0.2"
 description = "Python SDK for Payra payment signature generation (backend)"
 readme = "README.md"
-authors = [{ name = "Wraith", email = "wraith@payra.cash" }]
+authors = [{ name = "Wraith", email = "contact@payra.cash" }]
 license = { file = "LICENSE" }
 requires-python = ">=3.8"
 dependencies = [
+    "web3>=6.0.0",
     "eth-abi>=4.0.0",
     "eth-account>=0.10.0", # eth-account depends on eth-utils, so eth-utils is implicitly installed
     "python-dotenv>=1.0.0", # For example usage

@@ -1,0 +1,12 @@
+# build artefakty
+/dist/
+/build/
+/*.egg-info
+
+# venv
+.venv/
+venv/
+
+# systemowe
+__pycache__/
+*.pyc

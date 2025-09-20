@@ -1,4 +1,4 @@
-# payra-sdk-python/example.py
+# payra-sdk-python/example_signature.py
 
 import time
 from payra_sdk import PayraSignatureGenerator, PayraSDKException

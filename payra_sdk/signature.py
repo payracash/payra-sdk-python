@@ -85,8 +85,7 @@ class PayraSignatureGenerator:
             # ['address', 'uint256', 'string', 'uint256', 'uint256', 'address'],
             # [formState.token, BigInt(formState.merchantId), formState.orderId, amountInWei, BigInt(currentTimestamp)]
             encoded_data = encode(
-                ['address', 'uint256', 'string', 'uint256', 'uint256', 'address'],
-                [
+                ['address', 'uint256', 'string', 'uint256', 'uint256', 'address'],[
                     checksum_token_address,
                     merchant_id,        # merchantId as uint256
                     order_id,           # orderId as string
@@ -174,8 +173,7 @@ class PayraSignatureGenerator:
         checksum_token_address = to_checksum_address(token_address)
         checksum_payer_address = to_checksum_address(payer_address)
         encoded_data = encode(
-            ['address', 'uint256', 'string', 'uint256', 'uint256', 'address'],
-            [
+            ['address', 'uint256', 'string', 'uint256', 'uint256', 'address'],[
                 checksum_token_address,
                 merchant_id,
                 order_id,
