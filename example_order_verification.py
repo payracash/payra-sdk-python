@@ -3,6 +3,7 @@
 from payra_sdk import PayraOrderVerification, PayraSDKException
 
 ORDER_ID = "your-real-order-id"
+ORDER_ID = "ord-170"
 
 def run_example():
     try:

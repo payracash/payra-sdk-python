@@ -1,17 +1,17 @@
 # payra-sdk-python/example_signature.py
 
 import time
-from payra_sdk import PayraSignatureGenerator, PayraSDKException
+from payra_sdk import PayraSignatureGenerator, PayraSDKException, PayraUtils
 
 # --- Example Payment Data (as received from frontend) ---
-# This data should come directly from your frontend, with `amount` already in wei/smallest units.
+# This data should come directly from your frontend, with `amount_wei` already in wei/smallest units.
 PAYMENT_DATA = {
     "network": "polygon",
     "tokenAddress": "0xc2132D05D31c914a87C6611C10748AEb04B58e8F", # Example ERC20 Token Address
-    "orderId": "ORDER-1753824905006-301-322",
-    "amount": 4000000, # wei/smallest units (e.g., 2 * 10^6 for a token with 6 decimals)
-    "timestamp": 1753826059, # Unix timestamp (seconds)
-    "payerAddress": "0xe6c961D6ad9a27Ea8e5d99e40abaC365DE9Cc162"
+    "orderId": "ORDER-1760273788561-93-661",
+    "amountWei": 12340000, # wei/smallest units (e.g., 2 * 10^6 for a token with 6 decimals)
+    "timestamp": 1760274141, # Unix timestamp (seconds)
+    "payerAddress": "0xbCd665bE1393094bfD5013E0e2e21aB6Df1D6078"
 }
 
 def run_example():
@@ -21,6 +21,9 @@ def run_example():
         print(f"  {key}: {value}")
 
     try:
+        #Convert USD/token to Wei if you need
+        #amount_wei = PayraUtils.to_wei(3.34, 'polygon', 'usdt')
+
         # Initialize the signature generator with the backend's private key
         payra_signer = PayraSignatureGenerator()
 
@@ -30,7 +33,7 @@ def run_example():
             network=PAYMENT_DATA["network"],
             token_address=PAYMENT_DATA["tokenAddress"],
             order_id=PAYMENT_DATA["orderId"],
-            amount=PAYMENT_DATA["amount"],
+            amount_wei=PAYMENT_DATA["amountWei"],
             timestamp=PAYMENT_DATA["timestamp"],
             payer_address=PAYMENT_DATA["payerAddress"],
         )
@@ -48,7 +51,7 @@ def run_example():
             network=PAYMENT_DATA["network"],
             token_address=PAYMENT_DATA["tokenAddress"],
             order_id=PAYMENT_DATA["orderId"],
-            amount=PAYMENT_DATA["amount"],
+            amount_wei=PAYMENT_DATA["amountWei"],
             timestamp=PAYMENT_DATA["timestamp"],
             payer_address=PAYMENT_DATA["payerAddress"],
             signature=signature

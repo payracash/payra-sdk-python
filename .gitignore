@@ -10,3 +10,4 @@ venv/
 # systemowe
 __pycache__/
 *.pyc
+.env

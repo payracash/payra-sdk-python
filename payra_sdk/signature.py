@@ -7,7 +7,7 @@ from eth_abi import encode
 from eth_account import Account
 from eth_account.messages import encode_defunct
 from eth_utils import keccak, to_checksum_address
-from payra_sdk.exceptions import InvalidArgumentError, SignatureError
+from .exceptions import InvalidArgumentError, SignatureError
 
 # Load environment variables from .env file
 load_dotenv()
@@ -15,7 +15,7 @@ load_dotenv()
 class PayraSignatureGenerator:
     """
     SDK for generating Payra payment signatures on the backend.
-    This version assumes `amount` is already in the token's smallest unit (e.g., wei)
+    This version assumes `amount_wei` is already in the token's smallest unit (e.g., wei)
     and does not require connecting to a blockchain RPC for decimals lookup.
     """
 
@@ -30,7 +30,7 @@ class PayraSignatureGenerator:
         network: str,
         token_address: str,
         order_id: str,
-        amount: int,      # Expected as int (already in smallest units)
+        amount_wei: int,      # Expected as int (already in smallest units)
         timestamp: int,
         payer_address: str
     ) -> str:
@@ -38,13 +38,13 @@ class PayraSignatureGenerator:
         Generates a Payra compatible signature for a payment request.
 
         This method mirrors the logic of the JavaScript `generateSignature` function,
-        but operates offline with `amount` already converted to its smallest unit.
+        but operates offline with `amount_wei` already converted to its smallest unit.
 
         Args:
             token_address (str): The ERC20 token contract address (e.g., USDT, USDC).
             merchant_id (int): The merchant's unique ID.
             order_id (str): The unique order ID for this transaction.
-            amount (int): The payment amount in the token's smallest units (e.g., wei for ETH,
+            amount_wei (int): The payment amount in the token's smallest units (e.g., wei for ETH,
                           or 10^decimals for ERC20, already pre-calculated by frontend).
             timestamp (int, optional): Unix timestamp in seconds. If None, current time is used.
 
@@ -70,8 +70,8 @@ class PayraSignatureGenerator:
             raise InvalidArgumentError("merchant_id must be a non-negative integer.")
         if not isinstance(order_id, str) or not order_id:
             raise InvalidArgumentError("order_id must be a non-empty string.")
-        if not isinstance(amount, int) or amount < 0:
-            raise InvalidArgumentError("amount must be a non-negative integer (in smallest units).")
+        if not isinstance(amount_wei, int) or amount_wei < 0:
+            raise InvalidArgumentError("amount_wei must be a non-negative integer (in smallest units).")
         if not isinstance(timestamp, int) or timestamp < 0: # <--- Dodano walidację timestampu
             raise InvalidArgumentError("timestamp must be a non-negative integer and provided by frontend.")
         if not isinstance(payer_address, str) or not payer_address.startswith('0x'):
@@ -89,7 +89,7 @@ class PayraSignatureGenerator:
                     checksum_token_address,
                     merchant_id,        # merchantId as uint256
                     order_id,           # orderId as string
-                    amount,             # amount (already in smallest units) as uint256
+                    amount_wei,             # amount_wei (already in smallest units) as uint256
                     timestamp,          # timestamp as uint256
                     checksum_payer_address
                 ]
@@ -122,7 +122,7 @@ class PayraSignatureGenerator:
         network: str,
         token_address: str,
         order_id: str,
-        amount: int,
+        amount_wei: int,
         timestamp: int,
         payer_address: str,
         signature: str
@@ -141,7 +141,7 @@ class PayraSignatureGenerator:
             token_address=token_address,
             merchant_id=merchant_id,
             order_id=order_id,
-            amount=amount,
+            amount_wei=amount_wei,
             timestamp=timestamp,
             payer_address=payer_address
         )
@@ -162,7 +162,7 @@ class PayraSignatureGenerator:
         token_address: str,
         merchant_id: int,
         order_id: str,
-        amount: int,
+        amount_wei: int,
         timestamp: int,
         payer_address: str
     ) -> bytes:
@@ -177,7 +177,7 @@ class PayraSignatureGenerator:
                 checksum_token_address,
                 merchant_id,
                 order_id,
-                amount,
+                amount_wei,
                 timestamp,
                 checksum_payer_address
             ]
