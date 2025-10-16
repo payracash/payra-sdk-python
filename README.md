@@ -100,9 +100,7 @@ Create a (`.env`) file in your project root (you can copy from example):
 cp .env.example .env
 ```
 
-This file stores your **private configuration** and connection settings for all supported networks.  
-
-**Never commit  `.env`  to version control.**
+This file stores your **private configuration** and connection settings for all supported networks.  Never commit  (`.env`)  to version control.
 
 ### Required Variables
 
@@ -111,7 +109,8 @@ This file stores your **private configuration** and connection settings for all 
 Used for automatic fiat → USD conversions via the built-in Payra utilities.
 
 ```bash
-EXCHANGE_RATE_API_KEY=
+EXCHANGE_RATE_API_KEY=         # Your ExchangeRate API key (from exchangerate-api.com)
+EXCHANGE_RATE_CACHE_TIME=720   # Cache duration in minutes (default: 720 = 12h)
 
 PAYRA_POLYGON_CORE_FORWARD_CONTRACT_ADDRESS=0xf30070da76B55E5cB5750517E4DECBD6Cc5ce5a8
 PAYRA_POLYGON_PRIVATE_KEY=
@@ -132,8 +131,13 @@ PAYRA_LINEA_RPC_URL_1=
 PAYRA_LINEA_RPC_URL_2=
 ```
 
-### Important Notes
+#### Important Notes
 
+-   The cache automatically refreshes when it expires.    
+-   You can adjust the cache duration by setting  `EXCHANGE_RATE_CACHE_TIME`:
+    -   `5`  → cache for 5 minutes
+    -   `60`  → cache for 1 hour
+    -   `720`  → cache for 12 hours (default)
 - Each network (Polygon, Ethereum, Linea) has its own  **merchant ID**,  **private key**, and  **RPC URLs**.  
 - The SDK automatically detects which chain configuration to use based on the selected network.
 - You can use multiple RPC URLs for redundancy (the SDK will automatically fall back if one fails).
@@ -167,7 +171,7 @@ try:
         network=PAYMENT_DATA["network"],
         token_address=PAYMENT_DATA["tokenAddress"],
         order_id=PAYMENT_DATA["orderId"],
-        amount=PAYMENT_DATA["amountWei"],
+        amount_wei=PAYMENT_DATA["amountWei"],
         timestamp=PAYMENT_DATA["timestamp"],
         payer_address=PAYMENT_DATA["payerAddress"]
     )
@@ -202,7 +206,7 @@ try:
     # Initialize verifier for a specific network
     verifier = PayraOrderVerification("polygon")
 
-    print("\n🔍 Checking order status...")
+    print("\nChecking order status...")
     result = verifier.is_order_paid(ORDER_ID)
 
     print("Order ID:", ORDER_ID)
@@ -229,8 +233,8 @@ except Exception as e:
     ```python
     {
 	    "success": True,
-		"paid": True,
-		"error": None
+	    "paid": True,
+	    "error": None
 	}
 	```
 5.  If  `paid`  is  `True`, the order has been successfully processed and confirmed by the Payra smart contract.
@@ -278,7 +282,6 @@ python3 example_utils.py
 ```
 
 Make sure your (`.env`) file contains correct values for the `network` being used.
-
 
 ### Tips
 

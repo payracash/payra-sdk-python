@@ -1,4 +1,4 @@
-# build artefakty
+# build
 /dist/
 /build/
 /*.egg-info
@@ -7,7 +7,7 @@
 .venv/
 venv/
 
-# systemowe
+# systems
 __pycache__/
 *.pyc
 .env

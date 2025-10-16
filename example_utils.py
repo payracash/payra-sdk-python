@@ -1,5 +1,6 @@
 # payra-sdk-python/example_utils.py
 
+import os
 from payra_sdk import PayraUtils
 
 def run_example():
@@ -15,8 +16,12 @@ def run_example():
     print("POL decimals on Polygon:", PayraUtils.get_decimals("polygon", "pol"))
 
     # Convert 100 EUR to USD
-    usd_value = PayraUtils.convert_to_usd(100, "EUR")
-    print(f"100 EUR = {usd_value} USD")
+    # Only run currency conversion if API key is available
+    if os.getenv("EXCHANGE_RATE_API_KEY"):
+        usd_value = PayraUtils.convert_to_usd(100, "EUR")
+        print(f"100 EUR = {usd_value} USD")
+    else:
+        print("Skipping currency conversion — EXCHANGE_RATE_API_KEY not set.")
 
 if __name__ == "__main__":
     run_example()

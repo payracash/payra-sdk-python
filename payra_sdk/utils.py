@@ -1,8 +1,11 @@
 # payra-sdk-python/payra_sdk/utils.py
 
 import os
+import time
+import json
 import requests
 from web3 import Web3
+from pathlib import Path
 from typing import Any, Dict, Union
 from .exceptions import InvalidArgumentError
 
@@ -11,6 +14,9 @@ class PayraUtils:
     Utility helper for Payra SDK.
     Provides helper methods for conversions and ABI-related operations.
     """
+
+    _cache_dir = Path.home() / ".payra_cache"
+    _cache_file = _cache_dir / "payra_cash_exchange_rate_cache.json"
 
     @staticmethod
     def find_function(abi: list[Dict[str, Any]], name: str) -> Dict[str, Any]:
@@ -69,37 +75,59 @@ class PayraUtils:
         except KeyError:
             raise InvalidArgumentError(f"Unsupported token '{token}' on chain '{chain}'.")
 
+    # === Exchange Rates ===
     @staticmethod
     def convert_to_usd(amount: float, from_currency: str) -> float:
         """
         Converts a given amount from another currency to USD using the ExchangeRate API.
-        The .env must contain a full API URL, e.g.:
-        EXCHANGE_RATE_API_KEY=https://v6.exchangerate-api.com/v6/your_key/latest/USD
+        Caches data in ~/.payra_cache/exchange_rate.json to minimize API usage.
+        Default cache time: 720 minutes (12 hours).
         """
-        import requests
-        from .exceptions import InvalidArgumentError
 
-        api_url = os.getenv("EXCHANGE_RATE_API_KEY")
-        if not api_url:
-            raise InvalidArgumentError(
-                "EXCHANGE_RATE_API_KEY is not set. Please paste the full API URL from exchangerate-api.com"
-            )
+        api_key = os.getenv("EXCHANGE_RATE_API_KEY")
+        if not api_key:
+            raise InvalidArgumentError("EXCHANGE_RATE_API_KEY is not set in .env")
 
+        cache_minutes = int(os.getenv("EXCHANGE_RATE_CACHE_TIME", 720))
+        cache_ttl = cache_minutes * 60
+
+        api_url = f"https://v6.exchangerate-api.com/v6/{api_key}/latest/USD"
         from_currency = from_currency.upper()
+        current_time = time.time()
 
-        try:
-            response = requests.get(api_url, timeout=10)
-            response.raise_for_status()
-            data = response.json()
+        # Ensure cache directory exists
+        PayraUtils._cache_dir.mkdir(parents=True, exist_ok=True)
 
-            if "conversion_rates" not in data or from_currency not in data["conversion_rates"]:
-                raise InvalidArgumentError(f"Conversion rate for {from_currency} not found in API response")
+        # Try to read cache from file
+        data = None
+        if PayraUtils._cache_file.exists():
+            try:
+                with open(PayraUtils._cache_file, "r") as f:
+                    cache = json.load(f)
+                if (current_time - cache.get("timestamp", 0)) < cache_ttl:
+                    data = cache.get("data")
+            except Exception:
+                pass  # Ignore invalid cache
 
-            rate = data["conversion_rates"][from_currency]
-            usd_value = round(amount / rate, 2)
-            return usd_value
+        # Fetch new data if no valid cache
+        if data is None:
+            try:
+                response = requests.get(api_url, timeout=10)
+                response.raise_for_status()
+                data = response.json()
 
-        except requests.RequestException as e:
-            raise InvalidArgumentError(f"Failed to connect to ExchangeRate API: {e}")
-        except (KeyError, ValueError) as e:
-            raise InvalidArgumentError(f"Invalid data from ExchangeRate API: {e}")
+                # Save new cache
+                with open(PayraUtils._cache_file, "w") as f:
+                    json.dump({"timestamp": current_time, "data": data}, f)
+            except requests.RequestException as e:
+                raise InvalidArgumentError(f"Failed to connect to ExchangeRate API: {e}")
+            except (KeyError, ValueError) as e:
+                raise InvalidArgumentError(f"Invalid data from ExchangeRate API: {e}")
+
+        # Validate and convert
+        if "conversion_rates" not in data or from_currency not in data["conversion_rates"]:
+            raise InvalidArgumentError(f"Conversion rate for {from_currency} not found in API response")
+
+        rate = data["conversion_rates"][from_currency]
+        usd_value = round(amount / rate, 2)
+        return usd_value
