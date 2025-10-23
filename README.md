@@ -2,7 +2,7 @@
 
 # Payra Python SDK
 
-Official Python SDK for integrating **Payra's on-chain payment system** into your backend applications.
+Official **Python SDK** for integrating **Payra's on-chain payment system** into your backend applications.
 
 This SDK provides:
 - Secure generation of **ECDSA signatures** compatible with the Payra smart contract — used for order payment verification.
@@ -12,38 +12,38 @@ This SDK provides:
 
 The typical flow for signing and verifying a Payra transaction:
 
-1. The **frontend** prepares all required payment parameters:
-   - **Network** – blockchain name (e.g. Polygon, Linea)
-   - **Token address** – ERC-20 token contract address
-   - **Order ID** – unique order identifier
-   - **AmountWei** – already converted to the smallest unit (e.g. wei, 10⁶)
-   - **Timestamp** – Unix timestamp of the order
-   - **Payer wallet address**
-
-2. The frontend sends these parameters to your **backend**.
-3. The **backend** uses this SDK to generate a cryptographic **ECDSA signature** with its private key (performed **offline**).
-4. The backend returns the generated signature to the frontend.
-5. The **frontend** calls the Payra smart contract (`payOrder`) with all parameters **plus** the signature.
+1.  The  **frontend**  prepares all required payment parameters:
+    -   **Network**  – blockchain name (e.g. Polygon, Linea)
+    -   **Token address**  – ERC-20 token contract address
+    -   **Order ID**  – unique order identifier
+    -   **Amount Wei**  – already converted to the smallest unit (e.g. wei, 10⁶)
+    -   **Timestamp**  – Unix timestamp of the order
+    -   **Payer wallet address**  – the wallet address from which the user will make the on-chain payment
+2.  The frontend sends these parameters to your  **backend**.
+3.  The  **backend**  uses this SDK to generate a cryptographic  **ECDSA signature**  with its private key (performed  **offline**).
+4.  The backend returns the generated signature to the frontend.
+5.  The  **frontend**  calls the Payra smart contract (`payOrder`) with all parameters  **plus**  the signature.
 
 This process ensures full compatibility between your backend and Payra’s on-chain verification logic.
 
 ## Features
 
-- Generates **Ethereum ECDSA signatures** using the `secp256k1` curve.  
+- Generates **Ethereum ECDSA signatures** using the `secp256k1` curve.
 - Fully compatible with **Payra's Solidity smart contracts** (`ERC-1155` payment verification).  
-- Includes built-in **ABI encoding and decoding** via [`web3.py`](https://github.com/ethereum/web3.py).  
-- Supports environment-based configuration (`.env`) for managing multiple blockchain networks.  
+- Includes built-in **ABI encoding and decoding** via `web3.php`.
+- Supports `.env` and  `config/payra.php` configuration for multiple blockchain networks.  
+- Laravel IoC container integration (easy dependency injection)
 - Verifies **order payment status directly on-chain** via RPC or blockchain explorer API.  
-- Provides **secure backend integration** using merchant private keys.  
+- Provides **secure backend integration** for signing and verifying transactions.
 - Includes optional utility helpers for:
-  - **Currency conversion** (via [ExchangeRate API](https://www.exchangerate-api.com/))  
-  - **USD ⇄ WEI** conversion for token precision handling.  
+  - **Currency conversion** (via [ExchangeRate API](https://www.exchangerate-api.com/))
+  - **USD ⇄ WEI** conversion for token precision handling.
 
 ## Setup
 
 Before installing this package, make sure you have an active **Payra** account:
 
-👉 [https://payra.cash](https://payra.cash)
+[https://payra.cash](https://payra.cash)
 
 You will need:
 
@@ -94,13 +94,13 @@ This SDK requires:
 
 ## Environment Configuration
 
-Create a (`.env`) file in your project root (you can copy from example):
+Create a `.env` file in your project root (you can copy from example):
 
 ```bash
 cp .env.example .env
 ```
 
-This file stores your **private configuration** and connection settings for all supported networks.  Never commit  (`.env`)  to version control.
+This file stores your **private configuration** and connection settings for all supported networks.  Never commit `.env` to version control.
 
 ### Required Variables
 
@@ -109,8 +109,9 @@ This file stores your **private configuration** and connection settings for all 
 Used for automatic fiat → USD conversions via the built-in Payra utilities.
 
 ```bash
-EXCHANGE_RATE_API_KEY=         # Your ExchangeRate API key (from exchangerate-api.com)
-EXCHANGE_RATE_CACHE_TIME=720   # Cache duration in minutes (default: 720 = 12h)
+# Optional — only needed if you want to use the built-in currency conversion helper
+PAYRA_EXCHANGE_RATE_API_KEY=         # Your ExchangeRate API key (from exchangerate-api.com)
+PAYRA_EXCHANGE_RATE_CACHE_TIME=720   # Cache duration in minutes (default: 720 = 12h)
 
 PAYRA_POLYGON_CORE_FORWARD_CONTRACT_ADDRESS=0xf30070da76B55E5cB5750517E4DECBD6Cc5ce5a8
 PAYRA_POLYGON_PRIVATE_KEY=
@@ -134,7 +135,7 @@ PAYRA_LINEA_RPC_URL_2=
 #### Important Notes
 
 -   The cache automatically refreshes when it expires.    
--   You can adjust the cache duration by setting  `EXCHANGE_RATE_CACHE_TIME`:
+-   You can adjust the cache duration by setting  `PAYRA_EXCHANGE_RATE_CACHE_TIME`:
     -   `5`  → cache for 5 minutes
     -   `60`  → cache for 1 hour
     -   `720`  → cache for 12 hours (default)
@@ -184,10 +185,21 @@ except Exception as e:
     print(f"Unexpected error: {e}")
 ```
 
+#### Input Parameters
+
+| Field         | Type     | Description                                  |
+|--------------|----------|----------------------------------------------|
+| **`network`**    | `string` | Selected network name                        |
+| **`tokenAddress`** | `string` | ERC20 token contract address                 |
+| **`orderId`**     | `string` | Unique order reference (e.g. ORDER-123)      |
+| **`amountWei`**      | `string` or `integer` | Token amount in smallest unit (e.g. wei)     |
+| **`timestamp`**   | `number` | Unix timestamp of signature creation         |
+| **`payerAddress`**   | `string` | Payer Wallet Address      
+
 #### Behind the Scenes
 
 1.  The backend converts the amount to the smallest blockchain unit (e.g. wei).
-3.  A  `PayraSignatureGenerator`  instance is created using your private key from  (`.env`).
+3.  A  `PayraSignatureGenerator`  instance is created using your private key from `.env`
 4.  It generates an ECDSA signature that is fully verifiable on-chain by the Payra smart contract.
 5.  The resulting signature should be sent to the **frontend**, which must call `payOrder(...)` using the same parameters (`timestamp`, `orderId`, `amount`, `tokenAddress`, etc.) that were used to generate the signature.
 
@@ -281,11 +293,11 @@ python3 example_order_verification.py
 python3 example_utils.py
 ```
 
-Make sure your (`.env`) file contains correct values for the `network` being used.
+Make sure your `.env` file contains correct values for the `network` being used.
 
 ### Tips
 
-- Always verify your  (`.env`)  configuration before running any signing or on-chain verification examples.
+- Always verify your `.env` configuration before running any signing or on-chain verification examples.
 - The SDK examples are safe to run — they use  **read-only RPC calls**  (no real transactions are broadcast).
 - You can modify  `example_signature.py`  to test custom token addresses or order parameters.
 

@@ -84,11 +84,11 @@ class PayraUtils:
         Default cache time: 720 minutes (12 hours).
         """
 
-        api_key = os.getenv("EXCHANGE_RATE_API_KEY")
+        api_key = os.getenv("PAYRA_EXCHANGE_RATE_API_KEY")
         if not api_key:
-            raise InvalidArgumentError("EXCHANGE_RATE_API_KEY is not set in .env")
+            raise InvalidArgumentError("PAYRA_EXCHANGE_RATE_API_KEY is not set in .env")
 
-        cache_minutes = int(os.getenv("EXCHANGE_RATE_CACHE_TIME", 720))
+        cache_minutes = int(os.getenv("PAYRA_EXCHANGE_RATE_CACHE_TIME", 720))
         cache_ttl = cache_minutes * 60
 
         api_url = f"https://v6.exchangerate-api.com/v6/{api_key}/latest/USD"
