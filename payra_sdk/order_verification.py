@@ -66,27 +66,18 @@ class PayraOrderVerification:
 
         return random.choice(urls)
 
+
     def is_order_paid(self, order_id: str) -> dict:
         """
         Calls the Payra Forward contract to check if an order is paid.
         """
         try:
-            # encode isOrderPaid call manually
-            core_fn_selector = PayraUtils.function_selector(self.core_fn)
-            encoded_params = self.web3.codec.encode(
-                [inp["type"] for inp in self.core_fn["inputs"]],
+            raw = self._call_core_function(
+                "isOrderPaid",
                 [int(self.merchant_id), order_id]
             )
-            data = core_fn_selector + encoded_params.hex()
 
-            # call forward()
-            result = self.forward_contract.functions.forward("0x" + data).call()
-
-            # decode result
-            decoded = self.web3.codec.decode(
-                [out["type"] for out in self.core_fn["outputs"]],
-                result
-            )
+            decoded = self.web3.codec.decode(["bool"], raw)
 
             return {
                 "success": True,
@@ -100,3 +91,59 @@ class PayraOrderVerification:
                 "paid": None,
                 "error": str(e)
             }
+
+
+    def get_order_status(self, order_id: str) -> dict:
+        """
+        Calls the Payra Forward contract to get order status.
+        """
+        try:
+            raw = self._call_core_function(
+                "getOrderStatus",
+                [int(self.merchant_id), order_id]
+            )
+
+            decoded = self.web3.codec.decode(
+                ["bool", "address", "uint256", "uint256", "uint256"],
+                raw
+            )
+
+            return {
+                "success": True,
+                "error": None,
+                "paid": bool(decoded[0]),
+                "token": decoded[1],
+                "amount": int(decoded[2]),
+                "fee": int(decoded[3]),
+                "timestamp": int(decoded[4]),
+            }
+
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "paid": None,
+                "token": None,
+                "amount": None,
+                "fee": None,
+                "timestamp": None,
+            }
+
+    def _call_core_function(self, function_name: str, params: list) -> bytes:
+        """
+        Calls Payra Core contract via Forward and returns raw bytes.
+        """
+        core_fn = PayraUtils.find_function(self.abi, function_name)
+
+        selector = PayraUtils.function_selector(core_fn)
+
+        encoded_params = self.web3.codec.encode(
+            [inp["type"] for inp in core_fn["inputs"]],
+            params
+        )
+
+        data = selector + encoded_params.hex()
+
+        return self.forward_contract.functions.forward(
+            "0x" + data
+        ).call()

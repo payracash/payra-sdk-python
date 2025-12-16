@@ -18,7 +18,7 @@ def run_example():
 
     print("\nPayment Data received from frontend:")
     for key, value in PAYMENT_DATA.items():
-        print(f"  {key}: {value}")
+        print(f" {key}: {value}")
 
     try:
         #Convert USD/token to Wei if you need

@@ -7,18 +7,11 @@ ORDER_ID = "ORDER-1765138911744-126-5"
 def run_example():
     try:
         verifier = PayraOrderVerification("polygon") #select network
-        result = verifier.is_order_paid(ORDER_ID)
+        result = verifier.get_order_status(ORDER_ID)
 
-        print("\nChecking order status...")
+        print("\nGet order status...")
         print("Order ID:", ORDER_ID)
         print("Result:", result)
-
-        if result["success"] and result["paid"]:
-            print("Order is PAID")
-        elif result["success"]:
-            print("Order is NOT paid yet")
-        else:
-            print("Error:", result["error"])
 
     except PayraSDKException as e:
         print(f"SDK error: {e}")

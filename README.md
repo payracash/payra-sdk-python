@@ -43,9 +43,9 @@ This process ensures full compatibility between your backend and Payra’s on-ch
 
 Before installing this package, make sure you have an active **Payra** account:
 
-[https://payra.cash](https://payra.cash)
+[https://payra.cash/products/on-chain-payments/merchant-registration](https://payra.cash/products/on-chain-payments/merchant-registration)
 
-You will need:
+Before installing this package, make sure you have a **MerchantID**
 
 - Your **Merchant ID** (unique for each blockchain network)  
 - Your **Private Key** (used to sign Payra transactions securely)
@@ -205,15 +205,69 @@ except Exception as e:
 
 ---
 
-### Checking On-Chain Order Status
+### Get Order Status
 
-You can verify whether a Payra order has been successfully paid on-chain:
+Retrieve **full payment details** for a specific order from the Payra smart contract. This method returns the complete on-chain payment data associated with the order, including:
+
+-   whether the order has been paid,
+-   the payment token address,
+-   the paid amount,
+-   the fee amount,
+-   and the payment timestamp.
+
+Use this method when you need  **detailed information**  about the payment or want to display full transaction data.
 
 ```python
 from payra_sdk import PayraOrderVerification, PayraSDKException
 
 try:
-    ORDER_ID = "ORDER-1753824905006-301-322"
+    ORDER_ID = "ORDER-1765138911744-126-5"
+
+    # Initialize verifier for a specific network
+    verifier = PayraOrderVerification("polygon")
+
+    print("\nGet order status...")
+    result = verifier.get_order_status(ORDER_ID)
+
+    print("Order ID:", ORDER_ID)
+    print("Result:", result)
+
+except PayraSDKException as e:
+    print(f"Payra SDK error: {e}")
+except Exception as e:
+    print(f"Unexpected error: {e}")
+```
+
+#### Behind the Scenes
+
+1. The backend initializes a  `PayraOrderVerification`  object for the desired blockchain network.
+3. It calls  `get_order_status(order_id)`  to check if the order transaction exists and is confirmed on-chain.
+4. The function returns a dictionary with:
+    ```python
+    {
+	    "success": True,
+	    "paid": True,
+	    "error": None.
+	    "toke": '0xc2132d05d31c914a87c6611c10748aeb04b58e8f',
+	    "amount": 400000,
+	    "fee": 3600,
+	    "timestamp": 1765138941
+	}
+	```
+
+---
+
+### Check Order Paid Status
+
+Perform a **simple payment check** for a specific order. This method only verifies whether the order has been paid (`true`  or  `false`) and does **not** return any additional payment details.
+
+Use this method when you only need a **quick boolean confirmation** of the payment status.
+
+```python
+from payra_sdk import PayraOrderVerification, PayraSDKException
+
+try:
+    ORDER_ID = "ORDER-1765138911744-126-5"
 
     # Initialize verifier for a specific network
     verifier = PayraOrderVerification("polygon")
@@ -239,9 +293,9 @@ except Exception as e:
 
 #### Behind the Scenes
 
-1.  The backend initializes a  `PayraOrderVerification`  object for the desired blockchain network.
-3.  It calls  `is_order_paid(order_id)`  to check if the order transaction exists and is confirmed on-chain.
-4.  The function returns a dictionary with:
+1. The backend initializes a  `PayraOrderVerification`  object for the desired blockchain network.
+3. It calls  `is_order_paid(order_id)`  to check if the order transaction exists and is confirmed on-chain.
+4. The function returns a dictionary with:
     ```python
     {
 	    "success": True,
@@ -249,7 +303,7 @@ except Exception as e:
 	    "error": None
 	}
 	```
-5.  If  `paid`  is  `True`, the order has been successfully processed and confirmed by the Payra smart contract.
+5. If  `paid`  is  `True`, the order has been successfully processed and confirmed by the Payra smart contract.
 
 ---
 
@@ -260,29 +314,29 @@ The `PayraUtils` module provides convenient helpers for token conversion, precis
 ```python
 from payra_sdk import PayraUtils
 
-# 🔹 Convert USD/token amount to smallest unit (Wei or token decimals)
+# Convert USD/token amount to smallest unit (Wei or token decimals)
 amount_wei = PayraUtils.to_wei(3.34, 'polygon', 'usdt')
 print("Amount in Wei:", amount_wei)  # 3340000
 
-# 🔹 Convert from Wei back to readable token amount
+# Convert from Wei back to readable token amount
 amount = PayraUtils.from_wei(3340000, 'polygon', 'usdt', precision=2)
 print("Readable amount:", amount)  # "3.34"
 
-# 🔹 Get token decimals for any supported network
+# Get token decimals for any supported network
 print("USDT decimals on Polygon:", PayraUtils.get_decimals("polygon", "usdt"))
 print("POL decimals on Polygon:", PayraUtils.get_decimals("polygon", "pol"))
 
-# 🔹 Convert fiat currency to USD using the built-in ExchangeRate API
+# Convert fiat currency to USD using the built-in ExchangeRate API
 usd_value = PayraUtils.convert_to_usd(100, "EUR")
 print(f"100 EUR = {usd_value} USD")
 ```
 
 #### Behind the Scenes
 
--   `to_wei(amount, network, token)`  – Converts a human-readable token amount into the smallest unit (used on-chain).
--   `from_wei(amount, network, token, precision)`  – Converts back from smallest unit to a formatted amount.
--   `get_decimals(network, token)`  – Returns the number of decimals for the given token on that network.
--   `convert_to_usd(amount, currency)`  – Converts fiat amounts (e.g. EUR, GBP) to USD using your ExchangeRate API key.
+- `to_wei(amount, network, token)`  – Converts a human-readable token amount into the smallest unit (used on-chain).
+- `from_wei(amount, network, token, precision)`  – Converts back from smallest unit to a formatted amount.
+- `get_decimals(network, token)`  – Returns the number of decimals for the given token on that network.
+- `convert_to_usd(amount, currency)`  – Converts fiat amounts (e.g. EUR, GBP) to USD using your ExchangeRate API key.
 
 ## Testing
 You can run the included `examples` to test signing and verification:
@@ -303,24 +357,24 @@ Make sure your `.env` file contains correct values for the `network` being used.
 
 ## Projects
 
--   [GitHub / Home](https://github.com/payracash)
--   [GitHub / Source](https://github.com/payracash/payra-sdk-python)
--   [GitHub / Issues](https://github.com/payracash/payra-sdk-python/issues)
+- [GitHub/Home](https://github.com/payracash)
+- [GitHub/Source](https://github.com/payracash/payra-sdk-python)
+- [GitHub/Issues](https://github.com/payracash/payra-sdk-python/issues)
 
 ## Project
 
--   [https://payra.cash](https://payra.cash)
--   [https://payra.tech](https://payra.tech)
--   [https://payra.xyz](https://payra.xyz)
--   [https://payra.eth](https://payra.eth)
+- [https://payra.cash](https://payra.cash)
+- [https://payra.tech](https://payra.tech)
+- [https://payra.xyz](https://payra.xyz)
+- [https://payra.eth](https://payra.eth.limo) - suporrted by Brave Browser or .limo
 
 ## Social Media
 
 - [Telegram Payra Group](https://t.me/+GhTyJJrd4SMyMDA0)
 - [Telegram Announcements](https://t.me/payracash)
 - [Twix (X)](https://x.com/PayraCash)
-- [Hashnode](https://payra.hashnode.dev)
+- [Dev.to](https://dev.to/payracash)
 
 ##  License
 
-MIT © [Payra](https://github.com/payracash)
+MIT © [Payra](https://payra.cash)
