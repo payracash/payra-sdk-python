@@ -25,32 +25,96 @@ class PayraOrderVerification:
             raise ConnectionError(f"Failed to connect to QuickNode RPC for {self.network}")
 
         self.merchant_id = os.getenv(f"PAYRA_{self.network}_MERCHANT_ID")
-        self.forward_address = os.getenv(f"PAYRA_{self.network}_CORE_FORWARD_CONTRACT_ADDRESS")
+        self.gateway_address = os.getenv(f"PAYRA_{self.network}_OCP_GATEWAY_CONTRACT_ADDRESS")
 
         if not self.merchant_id:
             raise InvalidArgumentError(f"Missing PAYRA_{self.network}_MERCHANT_ID in .env")
-        if not self.forward_address:
-            raise InvalidArgumentError(f"Missing PAYRA_{self.network}_CORE_FORWARD_CONTRACT_ADDRESS in .env")
+        if not self.gateway_address:
+            raise InvalidArgumentError(f"Missing PAYRA_{self.network}_OCP_GATEWAY_CONTRACT_ADDRESS in .env")
 
         # Load ABI
         abi_path = os.path.join(os.path.dirname(__file__), "contracts", "payraABI.json")
         with open(abi_path, "r") as f:
             self.abi = json.load(f)
 
-        # find ABI parts
-        self.core_fn = PayraUtils.find_function(self.abi, "isOrderPaid")
-        self.forward_fn = PayraUtils.find_function(self.abi, "forward")
+        self.user_data_contract = self.get_user_data_contract()
 
-        # prepare forward contract
-        self.forward_contract = self.web3.eth.contract(
-            address=self.web3.to_checksum_address(self.forward_address),
-            abi=[self.forward_fn]
-        )
+    def get_user_data_contract(self):
+        """
+        Internal helper to initialize Payra contracts.
+        It fetches the UserData contract address from the Gateway registry.
+        """
+        # Initialize Gateway Contract
+        gateway_contract = self.web3.eth.contract(address=self.gateway_address, abi=self.abi)
+        
+        # getRegistryDetails
+        _, _, user_data_address, _ = gateway_contract.functions.getRegistryDetails().call()
+        
+        # Return the actual contract responsible for order data
+        return self.web3.eth.contract(address=user_data_address, abi=self.abi)
 
+    def is_order_paid(self, order_id: str) -> dict:
+        """
+        Verify if an order is paid on Payra contract.
+        """
+        try:
+            # Using the resolved user_data_contract
+            is_paid = self.user_data_contract.functions.isOrderPaid(
+                int(self.merchant_id), 
+                order_id
+            ).call()
+
+            return {
+                "success": True,
+                "paid": bool(is_paid),
+                "error": None
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "paid": None,
+                "error": str(e)
+            }
+
+    def get_order_status(self, order_id: str) -> dict:
+        """
+        Detailed status of an order from Payra smart contract.
+        Equivalent to getOrderDetails in Node.js version.
+        """
+        try:
+            # Calls getOrderDetails
+            order = self.user_data_contract.functions.getOrderDetails(
+                int(self.merchant_id), 
+                order_id
+            ).call()
+
+            # Mapping the returned tuple/struct to a dictionary
+            # Order struct: [paid, token, amount, fee, timestamp]
+            return {
+                "success": True,
+                "error": None,
+                "paid": bool(order[0]),
+                "token": order[1],
+                "amount": int(order[2]),
+                "fee": int(order[3]),
+                "timestamp": int(order[4]),
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "paid": None,
+                "token": None,
+                "amount": None,
+                "fee": None,
+                "timestamp": None,
+            }
+            
     def get_rpc_url(self, network: str) -> str:
         """
         Collects all PAYRA_{NETWORK}_RPC_URL_i variables and randomly picks one.
         """
+
         urls = []
         i = 1
         while True:
@@ -65,85 +129,3 @@ class PayraOrderVerification:
             raise InvalidArgumentError(f"No RPC URLs found for network: {network}")
 
         return random.choice(urls)
-
-
-    def is_order_paid(self, order_id: str) -> dict:
-        """
-        Calls the Payra Forward contract to check if an order is paid.
-        """
-        try:
-            raw = self._call_core_function(
-                "isOrderPaid",
-                [int(self.merchant_id), order_id]
-            )
-
-            decoded = self.web3.codec.decode(["bool"], raw)
-
-            return {
-                "success": True,
-                "paid": bool(decoded[0]),
-                "error": None
-            }
-
-        except Exception as e:
-            return {
-                "success": False,
-                "paid": None,
-                "error": str(e)
-            }
-
-
-    def get_order_status(self, order_id: str) -> dict:
-        """
-        Calls the Payra Forward contract to get order status.
-        """
-        try:
-            raw = self._call_core_function(
-                "getOrderStatus",
-                [int(self.merchant_id), order_id]
-            )
-
-            decoded = self.web3.codec.decode(
-                ["bool", "address", "uint256", "uint256", "uint256"],
-                raw
-            )
-
-            return {
-                "success": True,
-                "error": None,
-                "paid": bool(decoded[0]),
-                "token": decoded[1],
-                "amount": int(decoded[2]),
-                "fee": int(decoded[3]),
-                "timestamp": int(decoded[4]),
-            }
-
-        except Exception as e:
-            return {
-                "success": False,
-                "error": str(e),
-                "paid": None,
-                "token": None,
-                "amount": None,
-                "fee": None,
-                "timestamp": None,
-            }
-
-    def _call_core_function(self, function_name: str, params: list) -> bytes:
-        """
-        Calls Payra Core contract via Forward and returns raw bytes.
-        """
-        core_fn = PayraUtils.find_function(self.abi, function_name)
-
-        selector = PayraUtils.function_selector(core_fn)
-
-        encoded_params = self.web3.codec.encode(
-            [inp["type"] for inp in core_fn["inputs"]],
-            params
-        )
-
-        data = selector + encoded_params.hex()
-
-        return self.forward_contract.functions.forward(
-            "0x" + data
-        ).call()

@@ -187,20 +187,20 @@ class PayraSignatureGenerator:
     # get network env
     def get_credentials_for_network(self, network: str) -> tuple[str, int]:
         """
-        Returns (private_key, merchant_id) for the given network using dynamic env keys like:
-        PAYRA_POLYGON_PRIVATE_KEY, PAYRA_POLYGON_MERCHANT_ID
+        Returns (signature_key, merchant_id) for the given network using dynamic env keys like:
+        PAYRA_POLYGON_SIGNATURE_KEY, PAYRA_POLYGON_MERCHANT_ID
         """
 
-        private_key = os.getenv(f"PAYRA_{network.upper()}_PRIVATE_KEY")
+        signature_key = os.getenv(f"PAYRA_{network.upper()}_SIGNATURE_KEY")
         merchant_id = os.getenv(f"PAYRA_{network.upper()}_MERCHANT_ID")
 
-        if not private_key or not merchant_id:
-            raise ValueError(f"Missing credentials for network '{network}' in .env (checked {private_key_key}, {merchant_id_key})")
+        if not signature_key or not merchant_id:
+            raise ValueError(f"Missing credentials for network '{network}' in .env (checked {signature_key}, {merchant_id_key})")
 
-        return private_key, int(merchant_id)
+        return signature_key, int(merchant_id)
 
     def get_account_address(self, network: str) -> str:
-        private_key, merchant_id = self.get_credentials_for_network(network)
-        account = Account.from_key(private_key)
+        signature_key, merchant_id = self.get_credentials_for_network(network)
+        account = Account.from_key(signature_key)
 
         return account.address

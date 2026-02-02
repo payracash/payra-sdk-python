@@ -18,24 +18,6 @@ class PayraUtils:
     _cache_dir = Path.home() / ".payra_cache"
     _cache_file = _cache_dir / "payra_cash_exchange_rate_cache.json"
 
-    @staticmethod
-    def find_function(abi: list[Dict[str, Any]], name: str) -> Dict[str, Any]:
-        """
-        Finds a function definition by name in the given ABI.
-        """
-        for entry in abi:
-            if entry.get("type") == "function" and entry.get("name") == name:
-                return entry
-        raise InvalidArgumentError(f"Function {name} not found in ABI!")
-
-    @staticmethod
-    def function_selector(fn: Dict[str, Any]) -> str:
-        """
-        Generates the function selector (first 4 bytes of keccak of signature).
-        """
-        signature = f"{fn['name']}({','.join([inp['type'] for inp in fn['inputs']])})"
-        return Web3.keccak(text=signature)[:4].hex()
-
     # === Conversion Helpers ===
     @staticmethod
     def to_wei(amount: Union[int, float, str], chain: str, token: str) -> int:
