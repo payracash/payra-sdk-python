@@ -11,7 +11,7 @@ from .exceptions import InvalidArgumentError, SignatureError
 # load env
 load_dotenv()
 
-class PayraOrderVerification:
+class PayraOrderService:
     """
     SDK for verifying if an order has been paid using the Payra smart contract.
     """
@@ -22,7 +22,7 @@ class PayraOrderVerification:
 
         self.web3 = Web3(Web3.HTTPProvider(self.rpc_url))
         if not self.web3.is_connected():
-            raise ConnectionError(f"Failed to connect to QuickNode RPC for {self.network}")
+            raise ConnectionError(f"Failed to connect to RPC for {self.network}")
 
         self.merchant_id = os.getenv(f"PAYRA_{self.network}_MERCHANT_ID")
         self.gateway_address = os.getenv(f"PAYRA_{self.network}_OCP_GATEWAY_CONTRACT_ADDRESS")
@@ -53,7 +53,7 @@ class PayraOrderVerification:
         # Return the actual contract responsible for order data
         return self.web3.eth.contract(address=user_data_address, abi=self.abi)
 
-    def is_order_paid(self, order_id: str) -> dict:
+    def is_paid(self, order_id: str) -> dict:
         """
         Verify if an order is paid on Payra contract.
         """
@@ -76,7 +76,7 @@ class PayraOrderVerification:
                 "error": str(e)
             }
 
-    def get_order_status(self, order_id: str) -> dict:
+    def get_details(self, order_id: str) -> dict:
         """
         Detailed status of an order from Payra smart contract.
         Equivalent to getOrderDetails in Node.js version.

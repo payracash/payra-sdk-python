@@ -1,17 +1,17 @@
 # payra-sdk-python/example_signature.py
 
 import time
-from payra_sdk import PayraSignatureGenerator, PayraSDKException, PayraUtils
+from payra_sdk import PayraSignature, PayraSDKException, PayraUtils
 
 # --- Example Payment Data (as received from frontend) ---
 # This data should come directly from your frontend, with `amount_wei` already in wei/smallest units.
 PAYMENT_DATA = {
     "network": "polygon",
-    "tokenAddress": "0xc2132D05D31c914a87C6611C10748AEb04B58e8F", # Example ERC20 Token Address
-    "orderId": "ORDER-1760273788561-93-661",
-    "amountWei": 12340000, # wei/smallest units (e.g., 2 * 10^6 for a token with 6 decimals)
+    "token_address": "0xc2132D05D31c914a87C6611C10748AEb04B58e8F", # Example ERC20 Token Address
+    "order_id": "ORDER-1760273788561-93-661",
+    "amount_wei": 12340000, # wei/smallest units (e.g., 2 * 10^6 for a token with 6 decimals)
     "timestamp": 1760274141, # Unix timestamp (seconds)
-    "payerAddress": "0xbCd665bE1393094bfD5013E0e2e21aB6Df1D6078"
+    "payer_address": "0xbCd665bE1393094bfD5013E0e2e21aB6Df1D6078"
 }
 
 def run_example():
@@ -25,17 +25,17 @@ def run_example():
         #amount_wei = PayraUtils.to_wei(3.34, 'polygon', 'usdt')
 
         # Initialize the signature generator with the backend's private key
-        payra_signer = PayraSignatureGenerator()
+        payra_signature = PayraSignature()
 
         # Generate the signature
         print("\nGenerating signature...")
-        signature = payra_signer.generate_signature(
+        signature = payra_signature.generate(
             network=PAYMENT_DATA["network"],
-            token_address=PAYMENT_DATA["tokenAddress"],
-            order_id=PAYMENT_DATA["orderId"],
-            amount_wei=PAYMENT_DATA["amountWei"],
+            token_address=PAYMENT_DATA["token_address"],
+            order_id=PAYMENT_DATA["order_id"],
+            amount_wei=PAYMENT_DATA["amount_wei"],
             timestamp=PAYMENT_DATA["timestamp"],
-            payer_address=PAYMENT_DATA["payerAddress"],
+            payer_address=PAYMENT_DATA["payer_address"],
         )
 
         print(f"\nSignature generated successfully:")
@@ -47,18 +47,18 @@ def run_example():
         # This demonstrates how the backend could verify if needed (e.g., if signature came from other source)
         # It should recover the address that matches the private key used for signing.
         print("\n--- Verifying signature locally (optional) ---")
-        recovered_address = payra_signer.verify_signature(
+        recovered_address = payra_signature.verify(
             network=PAYMENT_DATA["network"],
-            token_address=PAYMENT_DATA["tokenAddress"],
-            order_id=PAYMENT_DATA["orderId"],
-            amount_wei=PAYMENT_DATA["amountWei"],
+            token_address=PAYMENT_DATA["token_address"],
+            order_id=PAYMENT_DATA["order_id"],
+            amount_wei=PAYMENT_DATA["amount_wei"],
             timestamp=PAYMENT_DATA["timestamp"],
-            payer_address=PAYMENT_DATA["payerAddress"],
+            payer_address=PAYMENT_DATA["payer_address"],
             signature=signature
         )
         print(f"Recovered address from signature: {recovered_address}")
 
-        local_address = payra_signer.get_account_address(PAYMENT_DATA["network"])
+        local_address = payra_signature.get_account_address(PAYMENT_DATA["network"])
 
         if recovered_address.lower() == local_address.lower():
             print("Local verification successful: Recovered address matches the signer's address.")

@@ -4,8 +4,7 @@ Official **Python SDK** for integrating **Payra's on-chain payment system** into
 
 This SDK provides:
 - Secure generation of **ECDSA signatures** compatible with the Payra smart contract, used for order payment verification.
-- Simple methods for **checking the on-chain status of orders** to confirm completed payments.
-
+- Simple methods for **checking the on-chain details of orders** to confirm completed payments.
 
 ## How It Works
 
@@ -24,19 +23,17 @@ The typical flow for signing and verifying a Payra transaction:
 
 This process ensures full compatibility between your backend and Payra’s on-chain verification logic.
 
-
 ## Features
 
 - Generates **Ethereum ECDSA signatures** using the `secp256k1` curve.
 - Fully compatible with **Payra's Solidity smart contracts** (`ERC-1155` payment verification).
 - Supports `.env` and `config/payra.php` configuration for multiple blockchain networks.
 - Laravel IoC container integration (easy dependency injection)
-- Verifies **order payment status directly on-chain** via RPC or blockchain explorer API.
+- Verifies **order payment details directly on-chain** via RPC or blockchain explorer API.
 - Provides **secure backend integration** for signing and verifying transactions.
 - Includes optional utility helpers for:
 -  **Currency conversion** (via [ExchangeRate API](https://www.exchangerate-api.com/))
 -  **USD ⇄ WEI** conversion for token precision handling.
-
 
 ## Setup
 
@@ -62,7 +59,6 @@ To obtain your **RPC URLs** which are required for reading on-chain order status
 
 Optional (recommended):
 - Create a free API key at [ExchangeRate API](https://www.exchangerate-api.com/) to enable **automatic fiat → USD conversions** using the built-in utility helpers.
-
 
 ## Installation
 
@@ -104,7 +100,6 @@ cp  .env.example  .env
 ```
 
 This file stores your **private configuration** and connection settings for all supported networks. Never commit `.env` to version control.
-
 
 ### Required Variables
 
@@ -151,10 +146,10 @@ PAYRA_LINEA_RPC_URL_2=
 
 ## Usage Example
 
-### Generating and verifying a Payra signature in your backend
+### Generating signature
 
 ```python
-from payra_sdk import PayraUtils, PayraSignatureGenerator, PayraSDKException
+from payra_sdk import PayraUtils, PayraSignature, PayraSDKException
 
 try:
 	# Convert amount to smallest unit (wei or token decimals
@@ -162,24 +157,24 @@ try:
 	
 	PAYMENT_DATA = {
 		"network": "polygon",
-		"tokenAddress": "0xc2132D05D31c914a87C6611C10748AEb04B58e8F", # USDT on Polygon
-		"orderId": "ORDER-1753824905006-301-322",
-		"amountWei": amount_wei, # e.g. 3.34 USDT in smallest unit
+		"token_address": "0xc2132D05D31c914a87C6611C10748AEb04B58e8F", # USDT on Polygon
+		"order_id": "ord-258",
+		"amount_wei": amount_wei, # e.g. 3.34 USDT in smallest unit
 		"timestamp": 1753826059, # current Unix timestamp
-		"payerAddress": "0xe6c961D6ad9a27Ea8e5d99e40abaC365DE9Cc162"
+		"payer_address": "0xe6c961D6ad9a27Ea8e5d99e40abaC365DE9Cc162"
 	}
 	
 	# Initialize signer
-	payra_signer = PayraSignatureGenerator()
+	payra_signature = PayraSignature()
 	
 	# Generate cryptographic signature
-	signature = payra_signer.generate_signature(
+	signature = payra_signature.generate(
 		network=PAYMENT_DATA["network"],
-		token_address=PAYMENT_DATA["tokenAddress"],
-		order_id=PAYMENT_DATA["orderId"],
-		amount_wei=PAYMENT_DATA["amountWei"],
+		token_address=PAYMENT_DATA["token_address"],
+		order_id=PAYMENT_DATA["order_id"],
+		amount_wei=PAYMENT_DATA["amount_wei"],
 		timestamp=PAYMENT_DATA["timestamp"],
-		payer_address=PAYMENT_DATA["payerAddress"]
+		payer_address=PAYMENT_DATA["payer_address"]
 	)
 	
 	print(f"Generated signature: {signature}")
@@ -194,11 +189,11 @@ except  Exception  as e:
 | Field | Type | Description |
 |--------------|----------|----------------------------------------------|
 | **`network`** | `string` | Selected network name |
-| **`tokenAddress`** | `string` | ERC20 token contract address |
-| **`orderId`** | `string` | Unique order reference (e.g. ORDER-123) |
-| **`amountWei`** | `string` or `integer` | Token amount in smallest unit (e.g. wei) |
+| **`token_address`** | `string` | ERC20 token contract address |
+| **`order_id`** | `string` | Unique order reference (e.g. ORDER-123) |
+| **`amount_wei`** | `string` or `integer` | Token amount in smallest unit (e.g. wei) |
 | **`timestamp`** | `number` | Unix timestamp of signature creation |
-| **`payerAddress`** | `string` | Payer Wallet Address
+| **`payer_address`** | `string` | Payer Wallet Address
 
 #### Behind the Scenes
 
@@ -209,7 +204,7 @@ except  Exception  as e:
 
 ---
 
-### Get Order Status
+### Get Order Details
 
 Retrieve **full payment details** for a specific order from the Payra smart contract. This method returns the complete on-chain payment data associated with the order, including:
 - whether the order has been paid,
@@ -221,18 +216,18 @@ Retrieve **full payment details** for a specific order from the Payra smart cont
 Use this method when you need **detailed information** about the payment or want to display full transaction data.
 
 ```python
-from payra_sdk import PayraOrderVerification, PayraSDKException
+from payra_sdk import PayraOrderService, PayraSDKException
 
 try:
 	ORDER_ID = "ord-258"
 	# Initialize verifier for a specific network
-	verifier = PayraOrderVerification("polygon")
+	order_service = PayraOrderService("polygon")
 	
-	print("\nGet order status...")
-	result = verifier.get_order_status(ORDER_ID)
+	print("\nGet order details...")
+	details = order_service.get_details(ORDER_ID)
 	
 	print("Order ID:", ORDER_ID)
-	print("Result:", result)
+	print("Details:", details)
 	
 except PayraSDKException as e:
 	print(f"Payra SDK error: {e}")
@@ -242,8 +237,8 @@ except  Exception  as e:
 
 #### Behind the Scenes
 
-1. The backend initializes a `PayraOrderVerification` object for the desired blockchain network.
-2. It calls `get_order_status(order_id)` to check if the order transaction exists and is confirmed on-chain.
+1. The backend initializes a `PayraOrderService` object for the desired blockchain network.
+2. It calls `get_details(order_id)` to check if the order transaction exists and is confirmed on-chain.
 3. The function returns a dictionary with:
 
 ```python
@@ -267,16 +262,16 @@ Perform a **simple payment check** for a specific order. This method only verifi
 Use this method when you only need a **quick boolean confirmation** of the payment status.
 
 ```python
-from payra_sdk import PayraOrderVerification, PayraSDKException
+from payra_sdk import PayraOrderService, PayraSDKException
 
 try:
 	ORDER_ID = "ord-258"
 
 	# Initialize verifier for a specific network
-	verifier = PayraOrderVerification("polygon")
+	order_service = PayraOrderService("polygon")
 
 	print("\nChecking order status...")
-	result = verifier.is_order_paid(ORDER_ID)
+	result = order_service.is_paid(ORDER_ID)
 
 	print("Order ID:", ORDER_ID)
 	print("Result:", result)
@@ -296,7 +291,7 @@ except  Exception  as e:
 
 #### Behind the Scenes
 
-1. The backend initializes a `PayraOrderVerification` object for the desired blockchain network.
+1. The backend initializes a `PayraOrderService` object for the desired blockchain network.
 2. It calls `is_order_paid(order_id)` to check if the order transaction exists and is confirmed on-chain.
 3. The function returns a dictionary with:
 ```python
@@ -341,14 +336,14 @@ print(f"100 EUR = {usd_value} USD")
 -  `get_decimals(network, token)` – Returns the number of decimals for the given token on that network.
 -  `convert_to_usd(amount, currency)` – Converts fiat amounts (e.g. EUR, GBP) to USD using your ExchangeRate API key.
 
-
 ## Testing
 
 You can run the included `examples` to test signing and verification:
 
 ```python
 python3 example_signature.py
-python3 example_order_verification.py
+python3 example_order_get_details.py
+python3 example_order_is_paid
 python3 example_utils.py
 ```
 
@@ -359,7 +354,6 @@ Make sure your `.env` file contains correct values for the `network` being used.
 - Always verify your `.env` configuration before running any signing or on-chain verification examples.
 - The SDK examples are safe to run, they use **read-only RPC calls** (no real transactions are broadcast).
 - You can modify `example_signature.py` to test custom token addresses or order parameters.
-
 
 ## Projects
 
@@ -373,7 +367,6 @@ Make sure your `.env` file contains correct values for the `network` being used.
 - [https://payra.tech](https://payra.tech)
 - [https://payra.xyz](https://payra.xyz)
 - [https://payra.eth](https://payra.eth.limo) - suporrted by Brave and Opera Browser or .limo
-
 
 ## Social Media
 

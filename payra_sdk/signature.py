@@ -12,7 +12,7 @@ from .exceptions import InvalidArgumentError, SignatureError
 # Load environment variables from .env file
 load_dotenv()
 
-class PayraSignatureGenerator:
+class PayraSignature:
     """
     SDK for generating Payra payment signatures on the backend.
     This version assumes `amount_wei` is already in the token's smallest unit (e.g., wei)
@@ -22,10 +22,10 @@ class PayraSignatureGenerator:
     def __init__(self):
 
         """
-        Initializes the PayraSignatureGenerator.
+        Initializes the PayraSignature.
         """
 
-    def generate_signature(
+    def generate(
         self,
         network: str,
         token_address: str,
@@ -117,7 +117,7 @@ class PayraSignatureGenerator:
             raise SignatureError(f"Error generating signature: {e}")
 
     # Optional: Add a verification method if you ever need to verify a signature offline
-    def verify_signature(
+    def verify(
         self,
         network: str,
         token_address: str,
@@ -168,7 +168,7 @@ class PayraSignatureGenerator:
     ) -> bytes:
         """
         Generates the raw Keccak256 hash of the ABI-encoded payment data.
-        This is a helper for internal use, especially for `verify_signature`.
+        This is a helper for internal use, especially for `verify`.
         """
         checksum_token_address = to_checksum_address(token_address)
         checksum_payer_address = to_checksum_address(payer_address)

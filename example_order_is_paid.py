@@ -1,13 +1,13 @@
-# payra-sdk-python/example_order_verification.py
+# payra-sdk-python/example_order_is_paid.py
 
-from payra_sdk import PayraOrderVerification, PayraSDKException
+from payra_sdk import PayraOrderService, PayraSDKException
 
 ORDER_ID = "ord-258"
 
 def run_example():
     try:
-        verifier = PayraOrderVerification("polygon") #select network
-        result = verifier.is_order_paid(ORDER_ID)
+        order_service = PayraOrderService("polygon") #select network
+        result = order_service.is_paid(ORDER_ID)
 
         print("\nChecking order status...")
         print("Order ID:", ORDER_ID)
