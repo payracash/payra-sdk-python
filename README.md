@@ -135,9 +135,9 @@ PAYRA_LINEA_RPC_URL_2=
 
 - The cache automatically refreshes when it expires.
 - You can adjust the cache duration by setting `PAYRA_EXCHANGE_RATE_CACHE_TIME`:
--  `5` → cache for 5 minutes
--  `60` → cache for 1 hour
--  `720` → cache for 12 hours (default)
+	-  `5` → cache for 5 minutes
+	-  `60` → cache for 1 hour
+	-  `720` → cache for 12 hours (default)
 - Each network (Polygon, Ethereum, Linea) has its own **merchant ID**, **signature key**, and **RPC URLs**.
 - The SDK automatically detects which chain configuration to use based on the selected network.
 - You can use multiple RPC URLs for redundancy (the SDK will automatically fall back if one fails).
@@ -157,11 +157,11 @@ try:
 	
 	PAYMENT_DATA = {
 		"network": "polygon",
-		"token_address": "0xc2132D05D31c914a87C6611C10748AEb04B58e8F", # USDT on Polygon
-		"order_id": "ord-258",
-		"amount_wei": amount_wei, # e.g. 3.34 USDT in smallest unit
+		"tokenAddress": "0xc2132D05D31c914a87C6611C10748AEb04B58e8F", # USDT on Polygon
+		"orderId": "ord-258",
+		"amountWei": amount_wei, # e.g. 3.34 USDT in smallest unit
 		"timestamp": 1753826059, # current Unix timestamp
-		"payer_address": "0xe6c961D6ad9a27Ea8e5d99e40abaC365DE9Cc162"
+		"payerAddress": "0xe6c961D6ad9a27Ea8e5d99e40abaC365DE9Cc162"
 	}
 	
 	# Initialize signer
@@ -170,11 +170,11 @@ try:
 	# Generate cryptographic signature
 	signature = payra_signature.generate(
 		network=PAYMENT_DATA["network"],
-		token_address=PAYMENT_DATA["token_address"],
-		order_id=PAYMENT_DATA["order_id"],
-		amount_wei=PAYMENT_DATA["amount_wei"],
+		token_address=PAYMENT_DATA["tokenAddress"],
+		order_id=PAYMENT_DATA["orderId"],
+		amount_wei=PAYMENT_DATA["amountWei"],
 		timestamp=PAYMENT_DATA["timestamp"],
-		payer_address=PAYMENT_DATA["payer_address"]
+		payer_address=PAYMENT_DATA["payerAddress"]
 	)
 	
 	print(f"Generated signature: {signature}")
@@ -189,16 +189,16 @@ except  Exception  as e:
 | Field | Type | Description |
 |--------------|----------|----------------------------------------------|
 | **`network`** | `string` | Selected network name |
-| **`token_address`** | `string` | ERC20 token contract address |
-| **`order_id`** | `string` | Unique order reference (e.g. ORDER-123) |
-| **`amount_wei`** | `string` or `integer` | Token amount in smallest unit (e.g. wei) |
+| **`tokenAddress`** | `string` | ERC20 token contract address |
+| **`orderId`** | `string` | Unique order reference (e.g. ORDER-123) |
+| **`amountWei`** | `string` or `integer` | Token amount in smallest unit (e.g. wei) |
 | **`timestamp`** | `number` | Unix timestamp of signature creation |
-| **`payer_address`** | `string` | Payer Wallet Address
+| **`payerAddress`** | `string` | Payer Wallet Address
 
 #### Behind the Scenes
 
 1. The backend converts the amount to the smallest blockchain unit (e.g. wei).
-2. A `PayraSignatureGenerator` instance is created using your signature key from `.env`
+2. A `PayraSignature` instance is created using your signature key from `.env`
 3. It generates an ECDSA signature that is fully verifiable on-chain by the Payra smart contract.
 4. The resulting signature should be sent to the **frontend**, which must call `payOrder(...)` using the same parameters (`timestamp`, `orderId`, `amount`, `tokenAddress`, etc.) that were used to generate the signature.
 
@@ -228,7 +228,7 @@ try:
 	
 	print("Order ID:", ORDER_ID)
 	print("Details:", details)
-	
+	        
 except PayraSDKException as e:
 	print(f"Payra SDK error: {e}")
 except  Exception  as e:
@@ -238,14 +238,14 @@ except  Exception  as e:
 #### Behind the Scenes
 
 1. The backend initializes a `PayraOrderService` object for the desired blockchain network.
-2. It calls `get_details(order_id)` to check if the order transaction exists and is confirmed on-chain.
+2. It calls `get_details(order_id)` to get transaction details from blockchain.
 3. The function returns a dictionary with:
 
 ```python
 {
 	"success": True,
 	"paid": True,
-	"error": None.
+	"error": None,
 	"toke": '0xc2132d05d31c914a87c6611c10748aeb04b58e8f',
 	"amount": 400000,
 	"fee": 3600,
@@ -292,7 +292,7 @@ except  Exception  as e:
 #### Behind the Scenes
 
 1. The backend initializes a `PayraOrderService` object for the desired blockchain network.
-2. It calls `is_order_paid(order_id)` to check if the order transaction exists and is confirmed on-chain.
+2. It calls `is_paid(order_id)` to check if the order transaction exists and is confirmed on-chain.
 3. The function returns a dictionary with:
 ```python
 {
@@ -343,17 +343,16 @@ You can run the included `examples` to test signing and verification:
 ```python
 python3 example_signature.py
 python3 example_order_get_details.py
-python3 example_order_is_paid
+python3 example_order_is_paid.py
 python3 example_utils.py
 ```
 
 Make sure your `.env` file contains correct values for the `network` being used.
 
-### Tips
+## Security Notice
 
-- Always verify your `.env` configuration before running any signing or on-chain verification examples.
-- The SDK examples are safe to run, they use **read-only RPC calls** (no real transactions are broadcast).
-- You can modify `example_signature.py` to test custom token addresses or order parameters.
+Never expose your signature key in frontend or client-side code.  
+This SDK is  **server-side only**  and must be used securely on your backend. Never use it in frontend or browser environments. Also, never commit your `.env`  file to version control.
 
 ## Projects
 
@@ -376,4 +375,5 @@ Make sure your `.env` file contains correct values for the `network` being used.
 - [Dev.to](https://dev.to/payracash)
 
 ## License
+
 MIT © [Payra](https://payra.cash)
